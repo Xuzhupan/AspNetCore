@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
+using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -48,8 +51,45 @@ namespace Microsoft.AspNetCore.E2ETesting
             InitializeAsyncCore();
         }
 
-        protected virtual void InitializeAsyncCore()
+        protected static IList<string> NoAuthUrls = new List<string> {
+            "/",
+            "/Privacy"
+        };
+
+        protected static IList<string> AuthUrls = new List<string> {
+            "/",
+            "/Privacy",
+            "/Identity/Account/Login",
+            "/Identity/Account/Register"
+        };
+
+        public BrowserTestBase(BrowserFixture browserFixture, ITestOutputHelper output) : base(output)
         {
+        }
+
+
+        protected void TestBasicNavigation(AspNetProcess aspnetProcess, IEnumerable<string> urls)
+        {
+            foreach (var url in urls)
+            {
+                aspnetProcess.AssertOk(url);
+            }
+
+            var logs = new List<IReadOnlyCollection<LogEntry>>()
+            {
+                _logs.Value.GetLog(LogType.Browser),
+                _logs.Value.GetLog(LogType.Client)
+            };
+
+            foreach(var log in logs)
+            {
+                Assert.True(!log.Any(l => IsBadMessage(l)),  "There should have been no log messages of warning or higher.");
+            }
+        }
+
+        private bool IsBadMessage(LogEntry entry)
+        {
+            return entry.Level == LogLevel.Warning || entry.Level == LogLevel.Severe;
         }
     }
 }

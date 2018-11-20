@@ -22,6 +22,8 @@
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
       MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
       MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
+      MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
+      MicrosoftWebLibraryManagerBuildPackageVersion=$(MicrosoftWebLibraryManagerBuildPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
