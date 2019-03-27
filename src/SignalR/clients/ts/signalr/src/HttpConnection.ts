@@ -453,7 +453,7 @@ export class HttpConnection implements IConnection {
         const startTime = Date.now();
 
         while (nextRetryDelay != null) {
-            this.logger.log(LogLevel.Information, `The next reconnect attempt will start in ${nextRetryDelay} ms.`);
+            this.logger.log(LogLevel.Information, `Reconnect attempt number ${previousRetryCount} will start in ${nextRetryDelay} ms.`);
             await new Promise((resolve) => setTimeout(resolve, nextRetryDelay as number));
 
             if (this.connectionState !== ConnectionState.Reconnecting) {
@@ -485,7 +485,7 @@ export class HttpConnection implements IConnection {
             nextRetryDelay = reconnectPolicy.nextRetryDelayInMilliseconds(previousRetryCount++, Date.now() - startTime);
         }
 
-        this.logger.log(LogLevel.Information, "Reconnect retry attempts have been exhausted. Connection disconnecting.");
+        this.logger.log(LogLevel.Information, `Reconnect retries have been exhausted after ${previousRetryCount} failed attempts. Connection disconnecting.`);
 
         this.stopConnection();
     }
