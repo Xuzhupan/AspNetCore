@@ -230,8 +230,7 @@ export class HttpConnection implements IConnection {
                 this.transport!.onclose = (e) => this.reconnect(e);
             }
 
-            // Only change the state if we were connecting or reconnecting to not overwrite
-            // the state if the connection is already marked as Disconnected.
+            // Ensure the connection transitions to the appropriate state prior to completing this.startPromise.
             if (this.connectionState === ConnectionState.Connecting || this.connectionState === ConnectionState.Reconnecting) {
                 this.connectionState = ConnectionState.Connected;
             }
@@ -321,7 +320,6 @@ export class HttpConnection implements IConnection {
         const transports = negotiateResponse.availableTransports || [];
         for (const endpoint of transports) {
             try {
-                this.connectionState = ConnectionState.Connecting;
                 const transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
                 if (typeof transport === "number") {
                     this.transport = this.constructTransport(transport);
@@ -330,7 +328,6 @@ export class HttpConnection implements IConnection {
                         connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
                     }
                     await this.transport!.connect(connectUrl, requestedTransferFormat);
-                    this.changeState(ConnectionState.Connecting, ConnectionState.Connected);
                     return;
                 }
             } catch (ex) {
