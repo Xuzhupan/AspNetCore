@@ -60,15 +60,16 @@ export class HttpConnection implements IConnection {
     private startPromise?: Promise<void>;
     private stopError?: Error;
     private accessTokenFactory?: () => string | Promise<string>;
+    private connectionId: string | null;
+
+    private previousReconnectAttempts: number;
+    private reconnectStartTime: number;
 
     public readonly features: any = {};
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((e?: Error) => void) | null;
     public onreconnecting: ((e?: Error) => void) | null;
-
-    // REVIEW: I would like to have a connectionId param here to highlight it will change,
-    // but we don't currently expose connectionId.
-    public onreconnected: (() => void) | null;
+    public onreconnected: ((connectionId: string | null) => void) | null;
 
     constructor(url: string, options: IHttpConnectionOptions = {}) {
         Arg.isRequired(url, "url");
@@ -98,6 +99,10 @@ export class HttpConnection implements IConnection {
         this.httpClient = options.httpClient || new DefaultHttpClient(this.logger);
         this.connectionState = ConnectionState.Disconnected;
         this.options = options;
+        this.connectionId = null;
+        this.previousReconnectAttempts = 0;
+        this.reconnectStartTime = 0;
+
         this.onreceive = null;
         this.onclose = null;
         this.onreconnecting = null;
@@ -147,6 +152,10 @@ export class HttpConnection implements IConnection {
             this.connectionState = ConnectionState.Disconnected;
             throw e;
         }
+    }
+
+    public async continueReconnecting(error?: Error) {
+        await this.reconnectInternal(error);
     }
 
     private async startInternal(transferFormat: TransferFormat): Promise<void> {
@@ -203,6 +212,8 @@ export class HttpConnection implements IConnection {
                 if (redirects === MAX_REDIRECTS && negotiateResponse.url) {
                     return Promise.reject(new Error("Negotiate redirection limit exceeded."));
                 }
+
+                this.connectionId = negotiateResponse.connectionId !== undefined ? negotiateResponse.connectionId : null;
 
                 await this.createTransport(url, this.options.transport, negotiateResponse, transferFormat);
             }
@@ -413,7 +424,13 @@ export class HttpConnection implements IConnection {
         }
     }
 
-    private async reconnect(error?: Error) {
+    private reconnect(error?: Error) {
+        this.previousReconnectAttempts = 0;
+        this.reconnectStartTime = Date.now();
+        return this.reconnectInternal(error);
+    }
+
+    private async reconnectInternal(error?: Error) {
         try {
             await this.startPromise;
         } catch (e) {
@@ -422,11 +439,10 @@ export class HttpConnection implements IConnection {
         }
 
         const reconnectPolicy = this.options.reconnectPolicy as IReconnectPolicy;
-        let previousRetryCount = 0;
-        let nextRetryDelay = reconnectPolicy.nextRetryDelayInMilliseconds(previousRetryCount++, 0);
+        let nextRetryDelay = reconnectPolicy.nextRetryDelayInMilliseconds(this.previousReconnectAttempts++, Date.now() - this.reconnectStartTime);
 
         if (nextRetryDelay === null) {
-            this.logger.log(LogLevel.Information, "Connection not reconnecting because of the IReconnectPolicy.");
+            this.logger.log(LogLevel.Information, `Connection not reconnecting because of the IReconnectPolicy after ${Date.now() - this.reconnectStartTime} ms and ${this.previousReconnectAttempts} failed attempts.`);
             this.stopConnection(error);
             return;
         }
@@ -450,10 +466,8 @@ export class HttpConnection implements IConnection {
             }
         }
 
-        const startTime = Date.now();
-
         while (nextRetryDelay != null) {
-            this.logger.log(LogLevel.Information, `Reconnect attempt number ${previousRetryCount} will start in ${nextRetryDelay} ms.`);
+            this.logger.log(LogLevel.Information, `Reconnect attempt number ${this.previousReconnectAttempts} will start in ${nextRetryDelay} ms.`);
             await new Promise((resolve) => setTimeout(resolve, nextRetryDelay as number));
 
             if (this.connectionState !== ConnectionState.Reconnecting) {
@@ -469,7 +483,7 @@ export class HttpConnection implements IConnection {
                     this.logger.log(LogLevel.Information, "Connection reconnected.");
 
                     if (this.onreconnected) {
-                        this.onreconnected();
+                        this.onreconnected(this.connectionId);
                     }
                 }
 
@@ -482,10 +496,10 @@ export class HttpConnection implements IConnection {
                 }
             }
 
-            nextRetryDelay = reconnectPolicy.nextRetryDelayInMilliseconds(previousRetryCount++, Date.now() - startTime);
+            nextRetryDelay = reconnectPolicy.nextRetryDelayInMilliseconds(this.previousReconnectAttempts++, Date.now() - this.reconnectStartTime);
         }
 
-        this.logger.log(LogLevel.Information, `Reconnect retries have been exhausted after ${previousRetryCount} failed attempts. Connection disconnecting.`);
+        this.logger.log(LogLevel.Information, `Reconnect retries have been exhausted after ${Date.now() - this.reconnectStartTime} ms and ${this.previousReconnectAttempts} failed attempts. Connection disconnecting.`);
 
         this.stopConnection();
     }

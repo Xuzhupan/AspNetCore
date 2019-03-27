@@ -520,8 +520,8 @@ export class HubConnection {
     private connectionClosed(error?: Error) {
         this.connectionState = HubConnectionState.Disconnected;
 
-        // if handshake is in progress start will be waiting for the handshake promise, so we complete it
-        // if it has already completed this should just noop
+        // If the handshake is in progress, start will be waiting for the handshake promise, so we complete it.
+        // If it has already completed, this should just noop.
         if (this.handshakeRejecter) {
             this.handshakeRejecter(error);
         }
@@ -535,7 +535,7 @@ export class HubConnection {
     }
 
     private connectionReconnecting(error?: Error) {
-        if (this.connectionState !== HubConnectionState.Connected) {
+        if (this.connectionState === HubConnectionState.Disconnected) {
             // The handshake never completed. Just stop the connection which should reject the handshake promise and therefore also start().
             this.logger.log(LogLevel.Information, "The underlying connection started reconnecting before the hub handshake completed. Stopping.");
             // tslint:disable-next-line:no-floating-promises
@@ -543,16 +543,22 @@ export class HubConnection {
             return;
         }
 
-        this.connectionState = HubConnectionState.Reconnecting;
+        // The HubConnection could still be left in the reconnecting state from the last reconnect attempt if the handshake never completed.
+        // In this case, don't fire the reconnecting callbacks again. Only call the reconnecting callbacks again if the HubConnection
+        // fully transitioned into the connected state after the last time the reconnecting callbacks were called.
+        if (this.connectionState === HubConnectionState.Connected) {
+            this.connectionState = HubConnectionState.Reconnecting;
+
+            // TODO: should we catch an log exceptions from user-defined callbacks?
+            // It doesn't look like we do this elsewhere, but here it could mess up some of the reconnect logic if it throws.
+            this.reconnectingCallbacks.forEach((c) => c.apply(this, [error]));
+        }
 
         this.cancelCallbacksWithError(error ? error : new Error("Invocation canceled due to connection reconnecting."));
 
         this.cleanupTimeout();
         this.cleanupPingTimer();
 
-        this.reconnectingCallbacks.forEach((c) => c.apply(this, [error]));
-
-        // Set up the promise before reconnecting. Otherwise, it could race with received messages.
         this.initializeHandshakePromise();
     }
 
@@ -565,11 +571,12 @@ export class HubConnection {
             try {
                 await hubConnection.doHandshake();
                 hubConnection.connectionState = HubConnectionState.Connected;
-                hubConnection.reconnectedCallbacks.forEach((c) => c.apply(hubConnection));
             } catch (e) {
-                hubConnection.logger.log(LogLevel.Information, "Could not complete the hub handshake after the underlying connection started reconnected. Stopping. Error: " + e);
-                await hubConnection.stop();
+                await hubConnection.connection.continueReconnecting(e);
+                return;
             }
+
+            hubConnection.reconnectedCallbacks.forEach((c) => c.apply(hubConnection));
         }
 
         // tslint:disable-next-line:no-floating-promises
