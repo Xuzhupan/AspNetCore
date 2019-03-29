@@ -176,7 +176,7 @@
         });
 
         connection.onreconnecting(function (e) {
-            addLine('message-list', 'Connection reconnecting: ' + e, 'red');
+            addLine('message-list', 'Connection reconnecting: ' + e, 'yellow');
         });
 
         connection.onreconnected(function (e) {

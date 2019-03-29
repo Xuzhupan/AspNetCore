@@ -3,17 +3,13 @@
 
 import { IReconnectPolicy } from "./IReconnectPolicy";
 
-const DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = [0, 2000, 10000, 30000];
+const DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = [0, 2000, 10000, 30000, null];
 
 /** @private */
 export class DefaultReconnectPolicy implements IReconnectPolicy {
 
     // TODO: Add constructor that takes custom array and max random jitter.
     public nextRetryDelayInMilliseconds(previousRetryCount: number): number | null {
-        if (previousRetryCount >= DEFAULT_RETRY_DELAYS_IN_MILLISECONDS.length) {
-            return null;
-        }
-
         return DEFAULT_RETRY_DELAYS_IN_MILLISECONDS[previousRetryCount];
     }
 }

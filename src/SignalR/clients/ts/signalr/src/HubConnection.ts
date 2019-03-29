@@ -549,8 +549,6 @@ export class HubConnection {
         if (this.connectionState === HubConnectionState.Connected) {
             this.connectionState = HubConnectionState.Reconnecting;
 
-            // TODO: should we catch an log exceptions from user-defined callbacks?
-            // It doesn't look like we do this elsewhere, but here it could mess up some of the reconnect logic if it throws.
             this.reconnectingCallbacks.forEach((c) => c.apply(this, [error]));
         }
 

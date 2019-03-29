@@ -11,6 +11,5 @@ export interface IReconnectPolicy {
      *
      * @returns {number | null} The amount of time to wait before the next reconnect attempt. `null` tells the client to stop retrying and close.
      */
-    // TODO: add timeElapsedReconnecting parameter
     nextRetryDelayInMilliseconds(previousRetryCount: number, elapsedMilliseconds: number): number | null;
 }

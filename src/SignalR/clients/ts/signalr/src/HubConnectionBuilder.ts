@@ -110,7 +110,10 @@ export class HubConnectionBuilder {
      /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost. */
     public withAutomaticReconnect(): HubConnectionBuilder {
         if (this.httpConnectionOptions === "object") {
-            this.httpConnectionOptions.reconnectPolicy = new DefaultReconnectPolicy();
+            // If reconnectPolicy is set, automatic reconnect is already enabled.
+            if (this.httpConnectionOptions.reconnectPolicy === undefined) {
+                this.httpConnectionOptions.reconnectPolicy = new DefaultReconnectPolicy();
+            }
         } else {
             this.httpConnectionOptions = {
                 reconnectPolicy: new DefaultReconnectPolicy(),

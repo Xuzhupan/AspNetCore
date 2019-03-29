@@ -60,7 +60,7 @@ export class HttpConnection implements IConnection {
     private startPromise?: Promise<void>;
     private stopError?: Error;
     private accessTokenFactory?: () => string | Promise<string>;
-    private connectionId: string | null;
+    private connectionId?: string;
 
     private previousReconnectAttempts: number;
     private reconnectStartTime: number;
@@ -99,7 +99,6 @@ export class HttpConnection implements IConnection {
         this.httpClient = options.httpClient || new DefaultHttpClient(this.logger);
         this.connectionState = ConnectionState.Disconnected;
         this.options = options;
-        this.connectionId = null;
         this.previousReconnectAttempts = 0;
         this.reconnectStartTime = 0;
 
@@ -213,7 +212,7 @@ export class HttpConnection implements IConnection {
                     return Promise.reject(new Error("Negotiate redirection limit exceeded."));
                 }
 
-                this.connectionId = negotiateResponse.connectionId !== undefined ? negotiateResponse.connectionId : null;
+                this.connectionId = negotiateResponse.connectionId;
 
                 await this.createTransport(url, this.options.transport, negotiateResponse, transferFormat);
             }
