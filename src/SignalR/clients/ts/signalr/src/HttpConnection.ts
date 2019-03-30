@@ -69,7 +69,7 @@ export class HttpConnection implements IConnection {
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((e?: Error) => void) | null;
     public onreconnecting: ((e?: Error) => void) | null;
-    public onreconnected: ((connectionId: string | null) => void) | null;
+    public onreconnected: ((connectionId?: string) => void) | null;
 
     constructor(url: string, options: IHttpConnectionOptions = {}) {
         Arg.isRequired(url, "url");

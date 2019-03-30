@@ -17,5 +17,5 @@ export interface IConnection {
     onclose: ((error?: Error) => void) | null;
 
     onreconnecting: ((e?: Error) => void) | null;
-    onreconnected: ((connectionId: string | null) => void) | null;
+    onreconnected: ((connectionId?: string) => void) | null;
 }

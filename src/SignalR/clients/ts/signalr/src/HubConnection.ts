@@ -34,7 +34,7 @@ export class HubConnection {
     private invocationId: number;
     private closedCallbacks: Array<(error?: Error) => void>;
     private reconnectingCallbacks: Array<(error?: Error) => void>;
-    private reconnectedCallbacks: Array<() => void>;
+    private reconnectedCallbacks: Array<(connectionId?: string) => void>;
     private receivedHandshakeResponse: boolean;
     private handshakePromise!: Promise<{}>;
     private handshakeResolver!: (value?: PromiseLike<{}>) => void;
@@ -380,7 +380,7 @@ export class HubConnection {
      *
      * @param {Function} callback The handler that will be invoked when the connection successfully reconnects.
      */
-    public onreconnected(callback: () => void) {
+    public onreconnected(callback: (connectionId?: string) => void) {
         if (callback) {
             this.reconnectedCallbacks.push(callback);
         }
@@ -560,25 +560,25 @@ export class HubConnection {
         this.initializeHandshakePromise();
     }
 
-    private connectionReconnected() {
+    private connectionReconnected(connectionId?: string) {
         if (this.connectionState !== HubConnectionState.Reconnecting) {
             return;
         }
 
-        async function doHandshake(hubConnection: HubConnection) {
+        const doHandshake = async () => {
             try {
-                await hubConnection.doHandshake();
-                hubConnection.connectionState = HubConnectionState.Connected;
+                await this.doHandshake();
+                this.connectionState = HubConnectionState.Connected;
             } catch (e) {
-                await hubConnection.connection.continueReconnecting(e);
+                await this.connection.continueReconnecting(e);
                 return;
             }
 
-            hubConnection.reconnectedCallbacks.forEach((c) => c.apply(hubConnection));
-        }
+            this.reconnectedCallbacks.forEach((c) => c.apply(this, [connectionId]));
+        };
 
         // tslint:disable-next-line:no-floating-promises
-        doHandshake(this);
+        doHandshake();
     }
 
     private cancelCallbacksWithError(error: Error) {
