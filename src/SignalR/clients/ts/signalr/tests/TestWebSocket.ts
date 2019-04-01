@@ -14,6 +14,7 @@ export class TestWebSocket {
     public readyState: number = 1;
     public url: string;
 
+    public static webSocketSet: PromiseSource;
     public static webSocket: TestWebSocket;
     public receivedData: Array<(string | ArrayBuffer | Blob | ArrayBufferView)>;
 
@@ -58,8 +59,12 @@ export class TestWebSocket {
     constructor(url: string, protocols?: string | string[]) {
         this.url = url;
         this.protocol = protocols ? (typeof protocols === "string" ? protocols : protocols[0]) : "";
-        TestWebSocket.webSocket = this;
         this.receivedData = [];
+
+        TestWebSocket.webSocket = this;
+        if (TestWebSocket.webSocketSet) {
+            TestWebSocket.webSocketSet.resolve();
+        }
     }
 
     public readonly CLOSED: number = 1;

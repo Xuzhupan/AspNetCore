@@ -1240,8 +1240,8 @@ class TestConnection implements IConnection {
     public readonly features: any = {};
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
-    public onreconnecting: ((e?: Error | undefined) => void) | null;
-    public onreconnected: ((connectionId: string | null) => void) | null;
+    public onreconnecting: ((e?: Error) => void) | null;
+    public onreconnected: ((connectionId?: string) => void) | null;
     public sentData: any[];
     public lastInvocationId: string | null;
 

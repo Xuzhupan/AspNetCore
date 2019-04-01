@@ -65,14 +65,10 @@ describe("HttpConnection", () => {
 
     it("cannot start a running connection", async () => {
         await VerifyLogger.run(async (logger) => {
-            const negotiating = new PromiseSource();
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
-                    .on("POST", () => {
-                        negotiating.resolve();
-                        return defaultNegotiateResponse;
-                    }),
+                    .on("POST", () => defaultNegotiateResponse),
                 logger,
                 transport: {
                     connect() {
