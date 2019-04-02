@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var helper = CreateHelper(null, s => { });
             var writer = new StringWriter();
             var expectedmessage = $"No 'IComponentPrerenderer' implementation has been registered in the dependency injection container. " +
-                    $"This typically means a call to 'services.AddRazorComponents()' is missing in 'Startup.ConfigureServices'.";
+                    $"This typically means a call to 'services.AddServerSideBlazor()' is missing in 'Startup.ConfigureServices'.";
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<TestComponent>());
