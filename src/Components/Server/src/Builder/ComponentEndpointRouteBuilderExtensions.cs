@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
-        public static IEndpointConventionBuilder MapComponentHub(this IEndpointRouteBuilder endpoints)
+        public static IEndpointConventionBuilder MapBlazorHub(this IEndpointRouteBuilder endpoints)
         {
             if (endpoints == null)
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <param name="selector">The selector for the <typeparamref name="TComponent"/>.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
-        public static IEndpointConventionBuilder MapComponentHub<TComponent>(
+        public static IEndpointConventionBuilder MapBlazorHub<TComponent>(
             this IEndpointRouteBuilder endpoints,
             string selector)
         {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            return endpoints.MapComponentHub(typeof(TComponent), selector, ComponentHub.DefaultPath);
+            return endpoints.MapBlazorHub(typeof(TComponent), selector, ComponentHub.DefaultPath);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="selector">The selector for the <typeparamref name="TComponent"/>.</param>
         /// <param name="path">The path to map to which the <see cref="ComponentHub"/> will be mapped.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
-        public static IEndpointConventionBuilder MapComponentHub<TComponent>(
+        public static IEndpointConventionBuilder MapBlazorHub<TComponent>(
             this IEndpointRouteBuilder endpoints,
             string selector,
             string path)
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            return endpoints.MapComponentHub(typeof(TComponent), selector, path);
+            return endpoints.MapBlazorHub(typeof(TComponent), selector, path);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="selector">The selector for the <paramref name="componentType"/>.</param>
         /// <param name="path">The path to map to which the <see cref="ComponentHub"/> will be mapped.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
-        public static IEndpointConventionBuilder MapComponentHub(
+        public static IEndpointConventionBuilder MapBlazorHub(
             this IEndpointRouteBuilder endpoints,
             Type componentType,
             string selector,

@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddSingleton(HtmlEncoder.Default);
-            configureServices = configureServices ?? (s => s.AddRazorComponents());
+            configureServices = configureServices ?? (s => s.AddServerSideBlazor());
             configureServices?.Invoke(services);
 
             var helper = new Mock<IHtmlHelper>();
