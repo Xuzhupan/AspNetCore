@@ -235,6 +235,12 @@ export class HttpConnection implements IConnection {
             // Ensure the connection transitions to the appropriate state prior to completing this.startPromise.
             if (this.connectionState === ConnectionState.Connecting || this.connectionState === ConnectionState.Reconnecting) {
                 this.connectionState = ConnectionState.Connected;
+            } else {
+                const message = "Failed to start the connection. The connection was in neither the connecting nor reconnecting state when the transport connected.";
+                this.logger.log(LogLevel.Error, message);
+
+                this.transport = undefined;
+                return Promise.reject(new Error(message));
             }
         } catch (e) {
             // Only change state if currently connecting. Don't stop reconnect attempts here.
@@ -451,6 +457,7 @@ export class HttpConnection implements IConnection {
         }
 
         if (!this.changeState(ConnectionState.Connected, ConnectionState.Reconnecting)) {
+            this.logger.log(LogLevel.Information, "Connection left the connected state before it could start reconnecting.");
             return;
         }
 
@@ -465,6 +472,7 @@ export class HttpConnection implements IConnection {
 
             // Exit early if the onreconnecting callback called connection.stop().
             if (this.connectionState !== ConnectionState.Reconnecting) {
+                this.logger.log(LogLevel.Information, "Connection left the reconnecting state in onreconnecting callback. Done reconnecting.");
                 return;
             }
         }
@@ -476,20 +484,17 @@ export class HttpConnection implements IConnection {
             });
 
             if (this.connectionState !== ConnectionState.Reconnecting) {
+                this.logger.log(LogLevel.Information, "Connection left the reconnecting state during reconnect delay. Done reconnecting.");
                 return;
             }
 
             try {
-                await this.startInternal(this.transferFormat as TransferFormat);
+                await this.startInternal(this.transferFormat!);
 
-                // The TypeScript compiler thinks that this.connectionState is always Reconnecting here meaning this condition is always false.
-                // The TypeScript compiler is wrong.
-                if ((this.connectionState as any) === ConnectionState.Connected) {
-                    this.logger.log(LogLevel.Information, "Connection reconnected.");
+                this.logger.log(LogLevel.Information, "Connection reconnected.");
 
-                    if (this.onreconnected) {
-                        this.onreconnected(this.connectionId);
-                    }
+                if (this.onreconnected) {
+                    this.onreconnected(this.connectionId);
                 }
 
                 return;
@@ -497,6 +502,7 @@ export class HttpConnection implements IConnection {
                 this.logger.log(LogLevel.Information, `Reconnect attempt failed because of error '${e}'.`);
 
                 if (this.connectionState !== ConnectionState.Reconnecting) {
+                    this.logger.log(LogLevel.Information, "Connection left the reconnecting state during reconnect attempt. Done reconnecting.");
                     return;
                 }
             }
