@@ -117,9 +117,14 @@ export class HubConnection {
 
         await this.connection.start(this.protocol.transferFormat);
 
-        // Wait for the handshake to complete before marking connection as connected
-        await this.doHandshake();
-        this.connectionState = HubConnectionState.Connected;
+        try {
+            // Wait for the handshake to complete before marking connection as connected
+            await this.doHandshake();
+            this.connectionState = HubConnectionState.Connected;
+        } catch (e) {
+            this.connection.stop(e);
+            throw e;
+        }
     }
 
     private initializeHandshakePromise() {
@@ -446,10 +451,6 @@ export class HubConnection {
             this.logger.log(LogLevel.Error, message);
 
             const error = new Error(message);
-
-            // We don't want to wait on the stop itself.
-            // tslint:disable-next-line:no-floating-promises
-            this.connection.stop(error);
             this.handshakeRejecter(error);
             throw error;
         }
@@ -457,11 +458,9 @@ export class HubConnection {
             const message = "Server returned handshake error: " + responseMessage.error;
             this.logger.log(LogLevel.Error, message);
 
-            this.handshakeRejecter(message);
-            // We don't want to wait on the stop itself.
-            // tslint:disable-next-line:no-floating-promises
-            this.connection.stop(new Error(message));
-            throw new Error(message);
+            const error = new Error(message);
+            this.handshakeRejecter(error);
+            throw error;
         } else {
             this.logger.log(LogLevel.Debug, "Server handshake complete.");
         }
