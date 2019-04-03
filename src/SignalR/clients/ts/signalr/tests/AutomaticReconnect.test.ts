@@ -8,7 +8,7 @@
 // }
 
 import { DefaultReconnectPolicy } from "../src/DefaultReconnectPolicy";
-import { HttpConnection, INegotiateResponse } from "../src/HttpConnection";
+import { HttpConnection } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, TransferFormat } from "../src/ITransport";
 import { NullLogger } from "../src/Loggers";
@@ -16,21 +16,11 @@ import { WebSocketConstructor } from "../src/Polyfills";
 
 import { VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
-import { TestCloseEvent, TestErrorEvent, TestEvent, TestWebSocket } from "./TestWebSocket";
-import { PromiseSource } from "./Utils";
+import { TestCloseEvent, TestEvent, TestWebSocket } from "./TestWebSocket";
+import { defaultNegotiateResponse, PromiseSource } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
     logger: NullLogger.instance,
-};
-
-const defaultConnectionId = "abc123";
-const defaultNegotiateResponse: INegotiateResponse = {
-    availableTransports: [
-        { transport: "WebSockets", transferFormats: ["Text", "Binary"] },
-        { transport: "ServerSentEvents", transferFormats: ["Text"] },
-        { transport: "LongPolling", transferFormats: ["Text", "Binary"] },
-    ],
-    connectionId: defaultConnectionId,
 };
 
 describe("auto reconnect", () => {
