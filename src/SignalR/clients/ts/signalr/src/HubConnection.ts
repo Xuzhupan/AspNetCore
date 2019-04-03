@@ -122,7 +122,7 @@ export class HubConnection {
             await this.doHandshake();
             this.connectionState = HubConnectionState.Connected;
         } catch (e) {
-            this.connection.stop(e);
+            await this.connection.stop(e);
             throw e;
         }
     }
