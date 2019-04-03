@@ -6,7 +6,6 @@ import { HttpConnection } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, TransferFormat } from "../src/ITransport";
 import { NullLogger } from "../src/Loggers";
-import { WebSocketConstructor } from "../src/Polyfills";
 
 import { VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
@@ -45,7 +44,7 @@ describe("auto reconnect", () => {
             const startPromise = connection.start(TransferFormat.Text);
 
             await TestWebSocket.webSocketSet;
-            await TestWebSocket.webSocket.openSet;
+            await TestWebSocket.webSocket.closeSet;
 
             TestWebSocket.webSocket.onopen(new TestEvent());
 
@@ -99,7 +98,7 @@ describe("auto reconnect", () => {
             const startPromise = connection.start(TransferFormat.Text);
 
             await TestWebSocket.webSocketSet;
-            await TestWebSocket.webSocket.openSet;
+            await TestWebSocket.webSocket.closeSet;
 
             TestWebSocket.webSocket.onopen(new TestEvent());
 
@@ -125,7 +124,7 @@ describe("auto reconnect", () => {
             await reconnectingPromise;
 
             await TestWebSocket.webSocketSet;
-            await TestWebSocket.webSocket.openSet;
+            await TestWebSocket.webSocket.closeSet;
 
             TestWebSocket.webSocket.onopen(new TestEvent());
 
@@ -168,7 +167,7 @@ describe("auto reconnect", () => {
             const startPromise = connection.start(TransferFormat.Text);
 
             await TestWebSocket.webSocketSet;
-            await TestWebSocket.webSocket.openSet;
+            await TestWebSocket.webSocket.closeSet;
 
             TestWebSocket.webSocket.onopen(new TestEvent());
 
@@ -194,7 +193,7 @@ describe("auto reconnect", () => {
             await reconnectingPromise;
 
             await TestWebSocket.webSocketSet;
-            await TestWebSocket.webSocket.openSet;
+            await TestWebSocket.webSocket.closeSet;
 
             TestWebSocket.webSocket.onopen(new TestEvent());
 
@@ -235,7 +234,7 @@ describe("auto reconnect", () => {
             const startPromise = connection.start(TransferFormat.Text);
 
             await TestWebSocket.webSocketSet;
-            await TestWebSocket.webSocket.openSet;
+            await TestWebSocket.webSocket.closeSet;
 
             TestWebSocket.webSocket.onopen(new TestEvent());
 
@@ -262,7 +261,7 @@ describe("auto reconnect", () => {
             await reconnectingPromise;
 
             await TestWebSocket.webSocketSet;
-            await TestWebSocket.webSocket.openSet;
+            await TestWebSocket.webSocket.closeSet;
 
             TestWebSocket.webSocket.onerror(new TestEvent());
 

@@ -7,7 +7,6 @@ export class TestWebSocket {
     public binaryType: "blob" | "arraybuffer" = "blob";
     public bufferedAmount: number = 0;
     public extensions: string = "";
-    public onclose!: ((this: WebSocket, ev: CloseEvent) => any);
     public onerror!: ((this: WebSocket, ev: Event) => any);
     public onmessage!: ((this: WebSocket, ev: MessageEvent) => any);
     public protocol: string;
@@ -28,6 +27,18 @@ export class TestWebSocket {
 
     public get onopen(): (this: WebSocket, evt: Event) => any {
         return this._onopen!;
+    }
+
+    // tslint:disable-next-line:variable-name
+    private _onclose?: (this: WebSocket, evt: Event) => any;
+    public closeSet: PromiseSource = new PromiseSource();
+    public set onclose(value: (this: WebSocket, evt: Event) => any) {
+        this._onclose = value;
+        this.closeSet.resolve();
+    }
+
+    public get onclose(): (this: WebSocket, evt: Event) => any {
+        return this._onclose!;
     }
 
     public close(code?: number | undefined, reason?: string | undefined): void {
@@ -62,6 +73,7 @@ export class TestWebSocket {
         this.receivedData = [];
 
         TestWebSocket.webSocket = this;
+
         if (TestWebSocket.webSocketSet) {
             TestWebSocket.webSocketSet.resolve();
         }
