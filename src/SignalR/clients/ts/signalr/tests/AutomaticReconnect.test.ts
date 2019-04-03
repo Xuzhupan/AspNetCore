@@ -283,4 +283,83 @@ describe("auto reconnect", () => {
         "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.",
         "Failed to start the transport 'WebSockets': null");
     });
+
+    it("attempts can be exhausted", async () => {
+        const reconnectDelays = [0, 0, 0, 0];
+        let negotiateCount = 0;
+
+        await VerifyLogger.run(async (loggerImpl) => {
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => {
+                        negotiateCount++;
+                        return defaultNegotiateResponse;
+                    }),
+                transport: HttpTransportType.WebSockets,
+                WebSocket: TestWebSocket,
+                logger: loggerImpl,
+                reconnectPolicy: new DefaultReconnectPolicy(reconnectDelays)
+            } as IHttpConnectionOptions;
+
+            const reconnectingPromise = new PromiseSource();
+            const closePromise = new PromiseSource();
+            let onreconnectedCalled = false;
+            let onreconnectingCallCount = 0;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+
+            const startPromise = connection.start(TransferFormat.Text);
+
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.closeSet;
+
+            TestWebSocket.webSocket.onopen(new TestEvent());
+
+            await startPromise;
+
+            connection.onclose = (e) => {
+                closePromise.resolve();
+            };
+
+            connection.onreconnecting = (e) => {
+                onreconnectingCallCount++;
+                reconnectingPromise.resolve();
+            };
+
+            connection.onreconnected = (connectionId) => {
+                onreconnectedCalled = true;
+            };
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+
+            TestWebSocket.webSocket.onclose(new TestCloseEvent());
+
+            await reconnectingPromise;
+
+            for (let _ of reconnectDelays) {
+                await TestWebSocket.webSocketSet;
+                await TestWebSocket.webSocket.closeSet;
+
+                TestWebSocket.webSocketSet = new PromiseSource();
+
+                TestWebSocket.webSocket.onerror(new TestEvent());
+            }
+
+            await closePromise;
+
+            expect(onreconnectingCallCount).toBe(1);
+            expect(onreconnectedCalled).toBe(false);
+
+            expect(negotiateCount).toBe(5);
+
+        },
+        "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.",
+        "Failed to start the transport 'WebSockets': null",
+        "Failed to start the transport 'ServerSentEvents': Error: 'ServerSentEvents' is disabled by the client.",
+        "Failed to start the transport 'LongPolling': Error: 'LongPolling' is disabled by the client."
+        );
+    });
 });
