@@ -542,6 +542,13 @@ export class HubConnection {
             return;
         }
 
+        this.cancelCallbacksWithError(error ? error : new Error("Invocation canceled due to connection reconnecting."));
+
+        this.cleanupTimeout();
+        this.cleanupPingTimer();
+
+        this.initializeHandshakePromise();
+
         // The HubConnection could still be left in the reconnecting state from the last reconnect attempt if the handshake never completed.
         // In this case, don't fire the reconnecting callbacks again. Only call the reconnecting callbacks again if the HubConnection
         // fully transitioned into the connected state after the last time the reconnecting callbacks were called.
@@ -550,13 +557,6 @@ export class HubConnection {
 
             this.reconnectingCallbacks.forEach((c) => c.apply(this, [error]));
         }
-
-        this.cancelCallbacksWithError(error ? error : new Error("Invocation canceled due to connection reconnecting."));
-
-        this.cleanupTimeout();
-        this.cleanupPingTimer();
-
-        this.initializeHandshakePromise();
     }
 
     private connectionReconnected(connectionId?: string) {
