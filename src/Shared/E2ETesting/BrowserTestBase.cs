@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
-using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -66,25 +64,6 @@ namespace Microsoft.AspNetCore.E2ETesting
             "/Identity/Account/Login",
             "/Identity/Account/Register"
         };
-
-        protected void TestBasicNavigation(AspNetProcess aspnetProcess, IEnumerable<string> urls)
-        {
-            foreach (var url in urls)
-            {
-                aspnetProcess.AssertOk(url);
-            }
-
-            var logs = new List<IReadOnlyCollection<LogEntry>>()
-            {
-                _logs.Value.GetLog(LogType.Browser),
-                _logs.Value.GetLog(LogType.Client)
-            };
-
-            foreach(var log in logs)
-            {
-                Assert.True(!log.Any(l => IsBadMessage(l)),  "There should have been no log messages of warning or higher.");
-            }
-        }
 
         private bool IsBadMessage(LogEntry entry)
         {
