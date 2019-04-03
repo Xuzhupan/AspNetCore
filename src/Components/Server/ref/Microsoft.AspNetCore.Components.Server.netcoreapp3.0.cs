@@ -207,8 +207,8 @@ namespace Microsoft.AspNetCore.Builder
     {
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type componentType, string selector, string path) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector, string path) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector, string path) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.Browser.Rendering
