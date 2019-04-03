@@ -51,6 +51,10 @@ namespace Microsoft.AspNetCore.E2ETesting
             InitializeAsyncCore();
         }
 
+        protected virtual void InitializeAsyncCore()
+        {
+        }
+
         protected static IList<string> NoAuthUrls = new List<string> {
             "/",
             "/Privacy"
@@ -62,11 +66,6 @@ namespace Microsoft.AspNetCore.E2ETesting
             "/Identity/Account/Login",
             "/Identity/Account/Register"
         };
-
-        public BrowserTestBase(BrowserFixture browserFixture, ITestOutputHelper output) : base(output)
-        {
-        }
-
 
         protected void TestBasicNavigation(AspNetProcess aspnetProcess, IEnumerable<string> urls)
         {

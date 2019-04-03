@@ -4,24 +4,14 @@
 using System.IO;
 using System.Threading.Tasks;
 using Templates.Test.Helpers;
-using ProjectTemplates.Tests.Helpers;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Testing.xunit;
-using Templates.Test.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
-[assembly: AssemblyFixture(typeof(SeleniumServerFixture))]
-// Turn off parallel test run for Edge as the driver does not support multiple Selenium tests at the same time
-#if EDGE
-[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
-#endif
-[assembly: TestFramework("Templates.Test.Helpers.XunitExtensions.XunitTestFrameworkWithAssemblyFixture", "Templates.Test.Common")]
 namespace Templates.Test
 {
-    public class MvcTemplateTest : BrowserTestBase
+    public class MvcTemplateTest
     {
-        public MvcTemplateTest(BrowserFixture browserFixture, ITestOutputHelper output) : base(browserFixture, output)
+        public MvcTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
         {
             ProjectFactory = projectFactory;
             Output = output;

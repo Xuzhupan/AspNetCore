@@ -4,20 +4,14 @@
 using System.IO;
 using System.Threading.Tasks;
 using Templates.Test.Helpers;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Testing.xunit;
-using ProjectTemplates.Tests.Helpers;
-using Templates.Test.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
-[assembly: AssemblyFixture(typeof(SeleniumServerFixture))]
 namespace Templates.Test
 {
-    public class RazorPagesTemplateTest : BrowserTestBase
+    public class RazorPagesTemplateTest
     {
-        public RazorPagesTemplateTest(BrowserFixture browserFixture, ITestOutputHelper output)
-            : base(browserFixture, output)
+        public RazorPagesTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
         {
             ProjectFactory = projectFactory;
             Output = output;
