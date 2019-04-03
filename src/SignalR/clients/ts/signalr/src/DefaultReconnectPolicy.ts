@@ -3,15 +3,15 @@
 
 import { IReconnectPolicy } from "./IReconnectPolicy";
 
+// 0, 2, 10, 30 second delays before reconnect attempts.
 const DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = [0, 2000, 10000, 30000, null];
 
 /** @private */
 export class DefaultReconnectPolicy implements IReconnectPolicy {
-    private readonly retryDelays: (number | null)[];
+    private readonly retryDelays: Array<number | null>;
 
-    // TODO: Add constructor that takes custom array and max random jitter.
     constructor(retryDelays?: number[]) {
-        this.retryDelays = retryDelays != undefined ? [...retryDelays, null] : DEFAULT_RETRY_DELAYS_IN_MILLISECONDS;
+        this.retryDelays = retryDelays !== undefined ? [...retryDelays, null] : DEFAULT_RETRY_DELAYS_IN_MILLISECONDS;
     }
 
     public nextRetryDelayInMilliseconds(previousRetryCount: number): number | null {

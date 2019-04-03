@@ -36,6 +36,7 @@ export class HubConnectionBuilder {
      * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public configureLogging(logger: ILogger): HubConnectionBuilder;
+
     /** Configures custom logging for the {@link @aspnet/signalr.HubConnection}.
      *
      * @param {LogLevel | ILogger} logging An object implementing the {@link @aspnet/signalr.ILogger} interface or {@link @aspnet/signalr.LogLevel}.
@@ -89,6 +90,7 @@ export class HubConnectionBuilder {
             this.httpConnectionOptions = {...this.httpConnectionOptions, ...transportTypeOrOptions};
         } else {
             this.httpConnectionOptions = {
+                ...this.httpConnectionOptions,
                 transport: transportTypeOrOptions,
             };
         }
@@ -107,18 +109,26 @@ export class HubConnectionBuilder {
         return this;
     }
 
-     /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost. */
-    public withAutomaticReconnect(): HubConnectionBuilder {
-        if (this.httpConnectionOptions === "object") {
-            // If reconnectPolicy is set, automatic reconnect is already enabled.
-            if (this.httpConnectionOptions.reconnectPolicy === undefined) {
-                this.httpConnectionOptions.reconnectPolicy = new DefaultReconnectPolicy();
-            }
-        } else {
-            this.httpConnectionOptions = {
-                reconnectPolicy: new DefaultReconnectPolicy(),
-            };
+    /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
+     * By default, the client will wait 0, 2, 10 and 30 seconds respectively before trying up to 4 reconnect attempts.
+     */
+    public withAutomaticReconnect(): HubConnectionBuilder;
+
+    /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
+     *
+     * @param {number[]} retryDelays An array containing the delays in milliseconds before trying each reconnect attempt.
+     * The length of the array represents how many failed reconnect attempts it takes before the client will stop attempting to reconnect.
+     */
+    public withAutomaticReconnect(retryDelays: number[]): HubConnectionBuilder;
+    public withAutomaticReconnect(retryDelays?: number[]): HubConnectionBuilder {
+        if (this.httpConnectionOptions !== undefined && this.httpConnectionOptions.reconnectPolicy !== undefined) {
+            throw new Error("this.httpConnectionOptions.reconnectPolicy has already been set.");
         }
+
+        this.httpConnectionOptions = {
+                ...this.httpConnectionOptions,
+                reconnectPolicy: new DefaultReconnectPolicy(retryDelays),
+        };
 
         return this;
     }

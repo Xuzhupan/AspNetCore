@@ -9,7 +9,7 @@ export interface IReconnectPolicy {
      *
      * @param {number} elapsedMilliseconds The amount of time in milliseconds spent reconnecting so far.
      *
-     * @returns {number | null} The amount of time to wait before the next reconnect attempt. `null` tells the client to stop retrying and close.
+     * @returns {number | null} The amount of time in milliseconds to wait before the next reconnect attempt. `null` tells the client to stop retrying and close.
      */
     nextRetryDelayInMilliseconds(previousRetryCount: number, elapsedMilliseconds: number): number | null;
 }

@@ -354,7 +354,6 @@ describe("auto reconnect", () => {
             expect(onreconnectedCalled).toBe(false);
 
             expect(negotiateCount).toBe(5);
-
         },
         "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.",
         "Failed to start the transport 'WebSockets': null",
