@@ -691,7 +691,7 @@ describe("HubConnection", () => {
                     }
                     await expect(startPromise)
                         .rejects
-                        .toBe("Server returned handshake error: Error!");
+                        .toThrow("Server returned handshake error: Error!");
 
                     expect(closeError!.message).toEqual("Server returned handshake error: Error!");
                 } finally {
