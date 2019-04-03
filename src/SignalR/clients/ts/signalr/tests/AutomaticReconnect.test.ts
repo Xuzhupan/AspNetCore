@@ -15,24 +15,26 @@ import { TestEventSource, TestMessageEvent } from "./TestEventSource";
 
 const commonOptions: IHttpConnectionOptions = {
     logger: NullLogger.instance,
+    httpClient: new TestHttpClient().on("POST", () => defaultNegotiateResponse),
+    transport: HttpTransportType.WebSockets,
+    WebSocket: TestWebSocket,
+    EventSource: TestEventSource,
 };
 
 describe("auto reconnect", () => {
     it("is not enabled by default", async () => {
         let negotiateCount = 0;
 
-        await VerifyLogger.run(async (loggerImpl) => {
-            const options: IHttpConnectionOptions = {
+        await VerifyLogger.run(async (logger) => {
+            const options = {
                 ...commonOptions,
+                logger,
                 httpClient: new TestHttpClient()
                     .on("POST", () => {
                         negotiateCount++;
                         return defaultNegotiateResponse;
                     }),
-                transport: HttpTransportType.WebSockets,
-                WebSocket: TestWebSocket,
-                logger: loggerImpl,
-            } as IHttpConnectionOptions;
+            };
 
             const closePromise = new PromiseSource();
             let onreconnectingCalled = false;
@@ -64,7 +66,6 @@ describe("auto reconnect", () => {
 
             expect(onreconnectingCalled).toBe(false);
             expect(negotiateCount).toBe(1);
-
         },
         "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.");
     });
@@ -72,19 +73,17 @@ describe("auto reconnect", () => {
     it("can be opted into", async () => {
         let negotiateCount = 0;
 
-        await VerifyLogger.run(async (loggerImpl) => {
-            const options: IHttpConnectionOptions = {
+        await VerifyLogger.run(async (logger) => {
+            const options = {
                 ...commonOptions,
+                logger,
                 httpClient: new TestHttpClient()
                     .on("POST", () => {
                         negotiateCount++;
                         return defaultNegotiateResponse;
                     }),
-                transport: HttpTransportType.WebSockets,
-                WebSocket: TestWebSocket,
-                logger: loggerImpl,
                 reconnectPolicy: new DefaultReconnectPolicy()
-            } as IHttpConnectionOptions;
+            };
 
             const reconnectingPromise = new PromiseSource();
             const reconnectedPromise = new PromiseSource();
@@ -139,21 +138,17 @@ describe("auto reconnect", () => {
             expect(oncloseCalled).toBe(true);
 
             expect(negotiateCount).toBe(2);
-
         },
         "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.");
     });
 
     it("can be triggered by calling connectionLost()", async () => {
-        await VerifyLogger.run(async (loggerImpl) => {
-            const options: IHttpConnectionOptions = {
+        await VerifyLogger.run(async (logger) => {
+            const options = {
                 ...commonOptions,
-                httpClient: new TestHttpClient().on("POST", () => defaultNegotiateResponse),
-                transport: HttpTransportType.WebSockets,
-                WebSocket: TestWebSocket,
-                logger: loggerImpl,
+                logger,
                 reconnectPolicy: new DefaultReconnectPolicy()
-            } as IHttpConnectionOptions;
+            };
 
             const reconnectingPromise = new PromiseSource();
             const reconnectedPromise = new PromiseSource();
@@ -206,21 +201,18 @@ describe("auto reconnect", () => {
 
             expect(onreconnectingCallCount).toBe(1);
             expect(oncloseCalled).toBe(true);
-
         },
         "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.");
     });
 
     it("will attempt to use all available transports", async () => {
-        await VerifyLogger.run(async (loggerImpl) => {
-            const options: IHttpConnectionOptions = {
+        await VerifyLogger.run(async (logger) => {
+            const options = {
                 ...commonOptions,
-                httpClient: new TestHttpClient().on("POST", () => defaultNegotiateResponse),
-                WebSocket: TestWebSocket,
-                EventSource: TestEventSource,
-                logger: loggerImpl,
+                logger,
+                transport: undefined,
                 reconnectPolicy: new DefaultReconnectPolicy()
-            } as IHttpConnectionOptions;
+            };
 
             const reconnectingPromise = new PromiseSource();
             const reconnectedPromise = new PromiseSource();
@@ -278,7 +270,6 @@ describe("auto reconnect", () => {
 
             expect(onreconnectingCallCount).toBe(1);
             expect(oncloseCalled).toBe(true);
-
         },
         "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.",
         "Failed to start the transport 'WebSockets': null");
@@ -288,19 +279,17 @@ describe("auto reconnect", () => {
         const reconnectDelays = [0, 0, 0, 0];
         let negotiateCount = 0;
 
-        await VerifyLogger.run(async (loggerImpl) => {
-            const options: IHttpConnectionOptions = {
+        await VerifyLogger.run(async (logger) => {
+            const options = {
                 ...commonOptions,
+                logger,
                 httpClient: new TestHttpClient()
                     .on("POST", () => {
                         negotiateCount++;
                         return defaultNegotiateResponse;
                     }),
-                transport: HttpTransportType.WebSockets,
-                WebSocket: TestWebSocket,
-                logger: loggerImpl,
                 reconnectPolicy: new DefaultReconnectPolicy(reconnectDelays)
-            } as IHttpConnectionOptions;
+            };
 
             const reconnectingPromise = new PromiseSource();
             const closePromise = new PromiseSource();
@@ -358,7 +347,6 @@ describe("auto reconnect", () => {
         "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.",
         "Failed to start the transport 'WebSockets': null",
         "Failed to start the transport 'ServerSentEvents': Error: 'ServerSentEvents' is disabled by the client.",
-        "Failed to start the transport 'LongPolling': Error: 'LongPolling' is disabled by the client."
-        );
+        "Failed to start the transport 'LongPolling': Error: 'LongPolling' is disabled by the client.");
     });
 });
