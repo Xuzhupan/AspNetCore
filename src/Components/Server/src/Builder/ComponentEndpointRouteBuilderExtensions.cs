@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Routing;
 
@@ -13,8 +14,7 @@ namespace Microsoft.AspNetCore.Builder
     public static class ComponentEndpointRouteBuilderExtensions
     {
         /// <summary>
-        /// Maps the SignalR <see cref="ComponentHub"/> to the path <paramref name="path"/> and associates
-        /// the component <typeparamref name="TComponent"/> to this hub instance as the given DOM <paramref name="selector"/>.
+        /// Maps the SignalR <see cref="ComponentHub"/> to the path <see cref="ComponentHub.DefaultPath"/>.
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Maps the SignalR <see cref="ComponentHub"/> to the path <paramref name="path"/> and associates
+        /// Maps the SignalR <see cref="ComponentHub"/> to the path <see cref="ComponentHub.DefaultPath"/> and associates
         /// the component <typeparamref name="TComponent"/> to this hub instance as the given DOM <paramref name="selector"/>.
         /// </summary>
         /// <typeparam name="TComponent">The first <see cref="IComponent"/> associated with this <see cref="ComponentHub"/>.</typeparam>
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
         public static IEndpointConventionBuilder MapBlazorHub<TComponent>(
             this IEndpointRouteBuilder endpoints,
-            string selector)
+            string selector) where TComponent: IComponent
         {
             if (endpoints == null)
             {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Builder
         public static IEndpointConventionBuilder MapBlazorHub<TComponent>(
             this IEndpointRouteBuilder endpoints,
             string selector,
-            string path)
+            string path) where TComponent : IComponent
         {
             if (endpoints == null)
             {
