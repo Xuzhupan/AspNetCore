@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { DefaultReconnectPolicy } from "../src/DefaultReconnectPolicy";
-import { HubConnection, HubConnectionState } from "../src/HubConnection";
 import { HttpConnection } from "../src/HttpConnection";
+import { HubConnection, HubConnectionState } from "../src/HubConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, TransferFormat } from "../src/ITransport";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
@@ -11,17 +11,17 @@ import { NullLogger } from "../src/Loggers";
 import { TextMessageFormat } from "../src/TextMessageFormat";
 
 import { VerifyLogger } from "./Common";
+import { TestEventSource, TestMessageEvent } from "./TestEventSource";
 import { TestHttpClient } from "./TestHttpClient";
 import { TestCloseEvent, TestEvent, TestWebSocket } from "./TestWebSocket";
 import { defaultNegotiateResponse, PromiseSource } from "./Utils";
-import { TestEventSource, TestMessageEvent } from "./TestEventSource";
 
 const commonOptions: IHttpConnectionOptions = {
-    logger: NullLogger.instance,
-    httpClient: new TestHttpClient().on("POST", () => defaultNegotiateResponse),
-    transport: HttpTransportType.WebSockets,
-    WebSocket: TestWebSocket,
     EventSource: TestEventSource,
+    WebSocket: TestWebSocket,
+    httpClient: new TestHttpClient().on("POST", () => defaultNegotiateResponse),
+    logger: NullLogger.instance,
+    transport: HttpTransportType.WebSockets,
 };
 
 describe("auto reconnect", () => {
@@ -31,12 +31,12 @@ describe("auto reconnect", () => {
         await VerifyLogger.run(async (logger) => {
             const options = {
                 ...commonOptions,
-                logger,
                 httpClient: new TestHttpClient()
                     .on("POST", () => {
                         negotiateCount++;
                         return defaultNegotiateResponse;
                     }),
+                logger,
             };
 
             const closePromise = new PromiseSource();
@@ -79,13 +79,13 @@ describe("auto reconnect", () => {
         await VerifyLogger.run(async (logger) => {
             const options = {
                 ...commonOptions,
-                logger,
                 httpClient: new TestHttpClient()
                     .on("POST", () => {
                         negotiateCount++;
                         return defaultNegotiateResponse;
                     }),
-                reconnectPolicy: new DefaultReconnectPolicy()
+                logger,
+                reconnectPolicy: new DefaultReconnectPolicy(),
             };
 
             const reconnectingPromise = new PromiseSource();
@@ -150,7 +150,7 @@ describe("auto reconnect", () => {
             const options = {
                 ...commonOptions,
                 logger,
-                reconnectPolicy: new DefaultReconnectPolicy()
+                reconnectPolicy: new DefaultReconnectPolicy(),
             };
 
             const reconnectingPromise = new PromiseSource();
@@ -186,7 +186,7 @@ describe("auto reconnect", () => {
 
             TestWebSocket.webSocketSet = new PromiseSource();
 
-            connection.connectionLost(new Error());
+            await connection.connectionLost(new Error());
 
             await reconnectingPromise;
 
@@ -213,8 +213,8 @@ describe("auto reconnect", () => {
             const options = {
                 ...commonOptions,
                 logger,
+                reconnectPolicy: new DefaultReconnectPolicy(),
                 transport: undefined,
-                reconnectPolicy: new DefaultReconnectPolicy()
             };
 
             const reconnectingPromise = new PromiseSource();
@@ -285,13 +285,13 @@ describe("auto reconnect", () => {
         await VerifyLogger.run(async (logger) => {
             const options = {
                 ...commonOptions,
-                logger,
                 httpClient: new TestHttpClient()
                     .on("POST", () => {
                         negotiateCount++;
                         return defaultNegotiateResponse;
                     }),
-                reconnectPolicy: new DefaultReconnectPolicy(reconnectDelays)
+                logger,
+                reconnectPolicy: new DefaultReconnectPolicy(reconnectDelays),
             };
 
             const reconnectingPromise = new PromiseSource();
@@ -331,7 +331,7 @@ describe("auto reconnect", () => {
 
             await reconnectingPromise;
 
-            for (let _ of reconnectDelays) {
+            for (const _ of reconnectDelays) {
                 await TestWebSocket.webSocketSet;
                 await TestWebSocket.webSocket.closeSet;
 
@@ -360,13 +360,13 @@ describe("auto reconnect", () => {
         await VerifyLogger.run(async (logger) => {
             const options = {
                 ...commonOptions,
-                logger,
                 httpClient: new TestHttpClient()
                     .on("POST", () => {
                         negotiateCount++;
                         return defaultNegotiateResponse;
                     }),
-                reconnectPolicy: new DefaultReconnectPolicy(reconnectDelays)
+                logger,
+                reconnectPolicy: new DefaultReconnectPolicy(reconnectDelays),
             };
 
             const reconnectingPromise = new PromiseSource();
@@ -412,6 +412,8 @@ describe("auto reconnect", () => {
 
             await reconnectingPromise;
 
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
+
             await TestWebSocket.webSocketSet;
             await TestWebSocket.webSocket.closeSet;
 
@@ -421,6 +423,8 @@ describe("auto reconnect", () => {
             TestWebSocket.webSocket.onopen(new TestEvent());
             await new Promise((resolve) => setTimeout(resolve, 100));
             expect(() => TestWebSocket.webSocket.onmessage({ data: "invalid handshake response" } as MessageEvent)).toThrow("Error parsing handshake response: Error: Message is incomplete.");
+
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
 
             await TestWebSocket.webSocketSet;
             await TestWebSocket.webSocket.closeSet;
@@ -432,6 +436,7 @@ describe("auto reconnect", () => {
 
             await closePromise;
 
+            expect(hubConnection.state).toBe(HubConnectionState.Disconnected);
             expect(onreconnectingCallCount).toBe(1);
             expect(onreconnectedCalled).toBe(false);
 

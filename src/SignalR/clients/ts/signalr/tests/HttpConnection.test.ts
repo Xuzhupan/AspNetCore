@@ -12,7 +12,7 @@ import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
 
 import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
-import { PromiseSource, defaultConnectionId, defaultNegotiateResponse,  registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
+import { defaultConnectionId, defaultNegotiateResponse, PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
     logger: NullLogger.instance,

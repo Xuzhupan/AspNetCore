@@ -233,7 +233,7 @@ describe("HubConnectionBuilder", () => {
     it("reconnectPolicy preserved if set before transportType via withUrl", () => {
         const builder = new HubConnectionBuilder()
             .withAutomaticReconnect()
-            .withUrl("http://example.com", HttpTransportType.WebSockets)
+            .withUrl("http://example.com", HttpTransportType.WebSockets);
 
         expect(builder.httpConnectionOptions!.reconnectPolicy).toBeDefined();
         expect(builder.httpConnectionOptions!.transport).toBe(HttpTransportType.WebSockets);
@@ -244,7 +244,7 @@ describe("HubConnectionBuilder", () => {
             .withAutomaticReconnect()
             .withUrl("http://example.com", {
                 ...commonHttpOptions,
-                transport: HttpTransportType.WebSockets
+                transport: HttpTransportType.WebSockets,
             });
 
         expect(builder.httpConnectionOptions!.reconnectPolicy).toBeDefined();
@@ -255,7 +255,7 @@ describe("HubConnectionBuilder", () => {
         const builder = new HubConnectionBuilder()
             .withUrl("http://example.com", {
                 ...commonHttpOptions,
-                transport: HttpTransportType.WebSockets
+                transport: HttpTransportType.WebSockets,
             })
             .withAutomaticReconnect();
 
@@ -270,7 +270,7 @@ describe("HubConnectionBuilder", () => {
             .withAutomaticReconnect();
 
         let retryCount = 0;
-        for (let delay of DEFAULT_RETRY_DELAYS_IN_MILLISECONDS) {
+        for (const delay of DEFAULT_RETRY_DELAYS_IN_MILLISECONDS) {
             expect(builder.httpConnectionOptions!.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount++, 0)).toBe(delay);
         }
     });
@@ -281,7 +281,7 @@ describe("HubConnectionBuilder", () => {
             .withAutomaticReconnect(customRetryDelays);
 
         let retryCount = 0;
-        for (let delay of customRetryDelays) {
+        for (const delay of customRetryDelays) {
             expect(builder.httpConnectionOptions!.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount++, 0)).toBe(delay);
         }
 
