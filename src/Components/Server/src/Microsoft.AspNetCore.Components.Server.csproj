@@ -6,7 +6,6 @@
     <IsShippingPackage>true</IsShippingPackage>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
