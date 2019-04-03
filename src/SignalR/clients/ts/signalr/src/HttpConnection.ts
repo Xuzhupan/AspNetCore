@@ -65,6 +65,9 @@ export class HttpConnection implements IConnection {
     private previousReconnectAttempts: number;
     private reconnectStartTime: number;
 
+    // The type of the handle a) doesn't matter and b) varies when building in browser and node contexts
+    private reconnectDelayHandle?: any;
+
     public readonly features: any = {};
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((e?: Error) => void) | null;
@@ -413,6 +416,10 @@ export class HttpConnection implements IConnection {
             this.logger.log(LogLevel.Information, "Connection disconnected.");
         }
 
+        if (this.reconnectDelayHandle) {
+            clearTimeout(this.reconnectDelayHandle);
+        }
+
         this.connectionState = ConnectionState.Disconnected;
 
         if (this.onclose) {
@@ -464,7 +471,9 @@ export class HttpConnection implements IConnection {
 
         while (nextRetryDelay != null) {
             this.logger.log(LogLevel.Information, `Reconnect attempt number ${this.previousReconnectAttempts} will start in ${nextRetryDelay} ms.`);
-            await new Promise((resolve) => setTimeout(resolve, nextRetryDelay as number));
+            await new Promise((resolve) => {
+                this.reconnectDelayHandle = setTimeout(resolve, nextRetryDelay!);
+            });
 
             if (this.connectionState !== ConnectionState.Reconnecting) {
                 return;

@@ -22,7 +22,6 @@ function createHubConnection(connection: IConnection, logger?: ILogger | null, p
 registerUnhandledRejectionHandler();
 
 describe("HubConnection", () => {
-
     describe("start", () => {
         it("sends handshake message", async () => {
             await VerifyLogger.run(async (logger) => {
