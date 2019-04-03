@@ -11,7 +11,7 @@
   "groupIdentity": "Microsoft.Web.RazorComponents",
   "precedence": "5000",
   "identity": "Microsoft.Web.RazorComponents.CSharp.3.0",
-  "shortName": "razorcomponents",
+  "shortName": "blazorserverside",
   "tags": {
     "language": "C#",
     "type": "project"
