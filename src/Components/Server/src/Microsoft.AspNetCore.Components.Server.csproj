@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Components.</Description>
-    <IsShippingPackage>true</IsShippingPackage>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
