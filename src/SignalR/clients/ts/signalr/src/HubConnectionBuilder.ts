@@ -126,8 +126,8 @@ export class HubConnectionBuilder {
         }
 
         this.httpConnectionOptions = {
-                ...this.httpConnectionOptions,
-                reconnectPolicy: new DefaultReconnectPolicy(retryDelays),
+            ...this.httpConnectionOptions,
+            reconnectPolicy: new DefaultReconnectPolicy(retryDelays),
         };
 
         return this;

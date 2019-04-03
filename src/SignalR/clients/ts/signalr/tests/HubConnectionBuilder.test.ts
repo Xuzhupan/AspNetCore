@@ -219,6 +219,74 @@ describe("HubConnectionBuilder", () => {
         expect(httpConnectionLogger.messages).toContain("Starting connection with transfer format 'Text'.");
         expect(hubConnectionLogger.messages).not.toContain("Starting connection with transfer format 'Text'.");
     });
+
+    it("reconnectPolicy undefined by default", () => {
+        const builder = new HubConnectionBuilder().withUrl("http://example.com");
+        expect(builder.httpConnectionOptions!.reconnectPolicy).toBeUndefined();
+    });
+
+    it("withAutomaticReconnect throws is reconnectPolicy is already set", () => {
+        const builder = new HubConnectionBuilder().withAutomaticReconnect();
+        expect(() => builder.withAutomaticReconnect()).toThrow("this.httpConnectionOptions.reconnectPolicy has already been set.");
+    });
+
+    it("reconnectPolicy preserved if set before transportType via withUrl", () => {
+        const builder = new HubConnectionBuilder()
+            .withAutomaticReconnect()
+            .withUrl("http://example.com", HttpTransportType.WebSockets)
+
+        expect(builder.httpConnectionOptions!.reconnectPolicy).toBeDefined();
+        expect(builder.httpConnectionOptions!.transport).toBe(HttpTransportType.WebSockets);
+    });
+
+    it("reconnectPolicy preserved if set before httpConnectionOptions via withUrl", () => {
+        const builder = new HubConnectionBuilder()
+            .withAutomaticReconnect()
+            .withUrl("http://example.com", {
+                ...commonHttpOptions,
+                transport: HttpTransportType.WebSockets
+            });
+
+        expect(builder.httpConnectionOptions!.reconnectPolicy).toBeDefined();
+        expect(builder.httpConnectionOptions!.transport).toBe(HttpTransportType.WebSockets);
+    });
+
+    it("httpConnectionOptions preserved if set before withAutomaticReconnect", () => {
+        const builder = new HubConnectionBuilder()
+            .withUrl("http://example.com", {
+                ...commonHttpOptions,
+                transport: HttpTransportType.WebSockets
+            })
+            .withAutomaticReconnect();
+
+        expect(builder.httpConnectionOptions!.transport).toBe(HttpTransportType.WebSockets);
+        expect(builder.httpConnectionOptions!.reconnectPolicy).toBeDefined();
+    });
+
+    it("withAutomaticReconnect uses default retryDelays when called with no arguments", () => {
+        // From DefaultReconnectPolicy.ts
+        const DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = [0, 2000, 10000, 30000, null];
+        const builder = new HubConnectionBuilder()
+            .withAutomaticReconnect();
+
+        let retryCount = 0;
+        for (let delay of DEFAULT_RETRY_DELAYS_IN_MILLISECONDS) {
+            expect(builder.httpConnectionOptions!.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount++, 0)).toBe(delay);
+        }
+    });
+
+    it("withAutomaticReconnect uses custom retryDelays when provided", () => {
+        const customRetryDelays = [ 3, 1, 4, 1, 5, 9 ];
+        const builder = new HubConnectionBuilder()
+            .withAutomaticReconnect(customRetryDelays);
+
+        let retryCount = 0;
+        for (let delay of customRetryDelays) {
+            expect(builder.httpConnectionOptions!.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount++, 0)).toBe(delay);
+        }
+
+        expect(builder.httpConnectionOptions!.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount, 0)).toBe(null);
+    });
 });
 
 class CaptureLogger implements ILogger {
