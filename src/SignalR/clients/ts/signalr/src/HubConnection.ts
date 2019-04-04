@@ -494,7 +494,6 @@ export class HubConnection {
     private serverTimeout() {
         // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
         // Terminate the connection, but we don't need to wait on the promise.
-        // tslint:disable-next-line:no-floating-promises
         this.connection.connectionLost(new Error("Server timeout elapsed without receiving a message from the server."));
     }
 
@@ -554,7 +553,6 @@ export class HubConnection {
         // fully transitioned into the connected state after the last time the reconnecting callbacks were called.
         if (this.connectionState === HubConnectionState.Connected) {
             this.connectionState = HubConnectionState.Reconnecting;
-
             this.reconnectingCallbacks.forEach((c) => c.apply(this, [error]));
         }
     }
@@ -569,7 +567,7 @@ export class HubConnection {
                 await this.doHandshake();
                 this.connectionState = HubConnectionState.Connected;
             } catch (e) {
-                await this.connection.continueReconnecting(e);
+                this.connection.continueReconnecting(e);
                 return;
             }
 

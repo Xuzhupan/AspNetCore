@@ -5,7 +5,7 @@
 export interface IReconnectPolicy {
     /** Called after the transport loses the connection.
      *
-     * @param {number} previousRetryCount The number of failed reconnect attempts so far.
+     * @param {number} previousRetryCount The number of consecutive failed reconnect attempts so far.
      *
      * @param {number} elapsedMilliseconds The amount of time in milliseconds spent reconnecting so far.
      *
